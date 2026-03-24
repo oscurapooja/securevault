@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% block title %}Security Audit — Secure Vault{% endblock %}
+{% block extra_head %}
+<style>
+  body{background:#f0f2f5;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;margin:0;}
+  .sidebar{background:linear-gradient(180deg,#1a252f 0%,#2c3e50 40%,#34495e 100%);color:#fff;width:268px;position:fixed;height:100vh;overflow-y:auto;box-shadow:4px 0 20px rgba(0,0,0,.2);z-index:1000;display:flex;flex-direction:column;}
+  .vault-logo{display:flex;align-items:center;gap:14px;padding:22px 20px;background:rgba(0,0,0,.28);border-bottom:1px solid rgba(255,255,255,.07);}
+  .sidebar .metallic-safe{width:48px;height:48px;}.sidebar .safe-door{width:30px;height:36px;}.sidebar .metallic-dial{top:7px;width:14px;height:14px;}.sidebar .dial-markers{width:10px;height:10px;}.sidebar .dial-marker{width:1px;height:3px;}.sidebar .metallic-handle{width:16px;height:3px;bottom:6px;}.sidebar .brand-name{font-size:16px;}.sidebar .brand-tagline{font-size:8px;}
+  .sidebar-nav{padding:14px 0;flex:1;} .nav-section>span{display:block;font-size:.63rem;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.14em;text-transform:uppercase;padding:12px 20px 4px;}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 20px;color:rgba(255,255,255,.68);transition:all .2s;text-decoration:none;font-size:.88rem;border:none;background:none;width:100%;text-align:left;border-left:3px solid transparent;}
+  .nav-item:hover,.nav-item.active{background:rgba(255,255,255,.09);color:#fff;border-left-color:#667eea;padding-left:24px;} .nav-item i{width:18px;text-align:center;}
+  .sidebar-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.07);}
+  .session-bar{background:rgba(255,255,255,.07);border-radius:8px;padding:7px 12px;margin-bottom:10px;font-size:.72rem;color:rgba(255,255,255,.5);display:flex;align-items:center;gap:7px;}
+  .sdot{width:7px;height:7px;border-radius:50%;background:#27ae60;animation:dp 1s infinite;flex-shrink:0;} @keyframes dp{0%,100%{opacity:1}50%{opacity:.3}} .stimer{font-weight:700;color:rgba(255,255,255,.8);}
+  .user-chip{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;margin-bottom:10px;}
+  .uav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;} .uname{font-size:.85rem;color:rgba(255,255,255,.88);font-weight:600;}
+  .main-content{margin-left:268px;padding:32px;min-height:100vh;}
+  .back-link{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;color:#95a5a6;text-decoration:none;margin-bottom:16px;transition:color .2s;} .back-link:hover{color:#667eea;}
+  .pt{font-size:1.5rem;font-weight:800;color:#2c3e50;margin:0 0 4px;} .ps{font-size:.83rem;color:#95a5a6;margin:0 0 22px;}
+
+  /* Unlock box */
+  .unlock-card{background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.06);padding:24px;max-width:560px;margin-bottom:24px;}
+  .form-control{border-radius:10px;border:1px solid #e0e0e0;padding:10px 14px;font-size:.88rem;transition:all .2s;outline:none;}
+  .form-control:focus{border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.1);}
+  .pw-toggle-l{background:#f8f9fa;border:1px solid #e0e0e0;border-left:none;color:#95a5a6;border-radius:0 10px 10px 0;cursor:pointer;transition:all .2s;padding:0 13px;} .pw-toggle-l:hover{background:#e9ecef;color:#333;}
+  .btn-audit{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:10px;padding:10px 22px;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .25s;white-space:nowrap;}
+  .btn-audit:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(102,126,234,.4);}
+
+  /* Summary cards */
+  .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+  .sum-card{background:#fff;border-radius:14px;padding:18px 20px;box-shadow:0 2px 14px rgba(0,0,0,.06);text-align:center;border-top:4px solid #e0e0e0;}
+  .sum-card.green{border-top-color:#27ae60;} .sum-card.red{border-top-color:#e74c3c;} .sum-card.orange{border-top-color:#f39c12;} .sum-card.blue{border-top-color:#667eea;}
+  .sum-num{font-size:2.2rem;font-weight:800;color:#2c3e50;line-height:1;} .sum-label{font-size:.76rem;color:#95a5a6;margin-top:4px;}
+
+  /* Score ring */
+  .score-ring-wrap{background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.06);padding:24px;margin-bottom:24px;display:flex;align-items:center;gap:28px;flex-wrap:wrap;}
+  .score-ring{width:110px;height:110px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.8rem;font-weight:800;color:#fff;}
+  .sr-excellent{background:linear-gradient(135deg,#27ae60,#2ecc71);}
+  .sr-good{background:linear-gradient(135deg,#3498db,#5dade2);}
+  .sr-fair{background:linear-gradient(135deg,#f39c12,#f5b041);}
+  .sr-poor{background:linear-gradient(135deg,#e74c3c,#ec7063);}
+  .score-label{font-size:1.2rem;font-weight:700;color:#2c3e50;margin-bottom:4px;}
+  .score-sub{font-size:.85rem;color:#95a5a6;}
+
+  /* Issue sections */
+  .issue-section{background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.06);margin-bottom:20px;overflow:hidden;}
+  .is-header{padding:16px 22px;display:flex;align-items:center;justify-content:space-between;}
+  .is-header.danger{background:rgba(231,76,60,.05);border-bottom:1px solid rgba(231,76,60,.1);}
+  .is-header.warning{background:rgba(243,156,18,.05);border-bottom:1px solid rgba(243,156,18,.1);}
+  .is-header.success{background:rgba(39,174,96,.05);border-bottom:1px solid rgba(39,174,96,.1);}
+  .is-title{font-weight:700;font-size:1rem;color:#2c3e50;display:flex;align-items:center;gap:8px;}
+  .is-badge{border-radius:20px;padding:3px 10px;font-size:.72rem;font-weight:700;}
+  .ib-red{background:rgba(231,76,60,.12);color:#e74c3c;} .ib-orange{background:rgba(243,156,18,.12);color:#e67e22;} .ib-green{background:rgba(39,174,96,.12);color:#27ae60;}
+  .issue-list{padding:0;}
+  .issue-row{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;border-bottom:1px solid #f8f9fa;gap:12px;flex-wrap:wrap;}
+  .issue-row:last-child{border-bottom:none;}
+  .issue-name{font-weight:600;font-size:.9rem;color:#2c3e50;}
+  .issue-meta{font-size:.76rem;color:#95a5a6;margin-top:2px;}
+  .str-badge{padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;}
+  .sb-danger{background:rgba(231,76,60,.1);color:#e74c3c;} .sb-warning{background:rgba(243,156,18,.1);color:#e67e22;} .sb-success{background:rgba(39,174,96,.1);color:#27ae60;}
+  .fix-btn{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:.76rem;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s;white-space:nowrap;}
+  .fix-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(102,126,234,.35);color:#fff;}
+  .no-issues{padding:20px 22px;font-size:.88rem;color:#95a5a6;display:flex;align-items:center;gap:8px;}
+  @media(max-width:768px){.summary-grid{grid-template-columns:1fr 1fr;}}
+</style>
+{% endblock %}
+{% block body %}
+<div style="display:flex;">
+  <div class="sidebar">
+    <div class="vault-logo">
+      <div class="metallic-safe"><div class="safe-door">
+        <div class="metallic-dial"><div class="dial-markers"><div class="dial-marker"></div><div class="dial-marker"></div><div class="dial-marker"></div><div class="dial-marker"></div></div></div>
+        <div class="metallic-handle"></div>
+      </div></div>
+      <div><div class="brand-name">Secure Vault</div><div class="brand-tagline">Premium Security</div></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section"><span>Main</span>
+        <a href="{% url 'dashboard' %}" class="nav-item"><i class="fas fa-home"></i>Dashboard</a>
+        <a href="{% url 'add' %}" class="nav-item"><i class="fas fa-plus-circle"></i>Add Credential</a>
+      </div>
+      <div class="nav-section"><span>Vault</span>
+        <a href="{% url 'view' %}" class="nav-item"><i class="fas fa-lock"></i>All Credentials</a>
+      </div>
+      <div class="nav-section"><span>Tools</span>
+        <a href="{% url 'security_audit' %}" class="nav-item active"><i class="fas fa-shield-alt"></i>Security Audit</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="session-bar"><span class="sdot"></span>Session: <span id="sideTimer" class="stimer">5:00</span></div>
+      <div class="user-chip"><div class="uav">{{ request.user.username|first|upper }}</div><div><div class="uname">{{ request.user.username }}</div></div></div>
+      <a href="{% url 'logout' %}" class="nav-item" style="border-radius:8px;color:rgba(255,120,120,.8);"><i class="fas fa-sign-out-alt"></i>Logout</a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <a href="{% url 'dashboard' %}" class="back-link"><i class="fas fa-arrow-left"></i>Back to Dashboard</a>
+    <div class="pt"><i class="fas fa-shield-alt me-2" style="color:#667eea;"></i>Security Audit</div>
+    <div class="ps">Analyse your vault for weak, duplicate, and compromised passwords.</div>
+
+    <!-- Unlock to audit -->
+    <div class="unlock-card">
+      <div style="font-weight:700;font-size:.95rem;color:#2c3e50;margin-bottom:4px;"><i class="fas fa-key me-2" style="color:#667eea;"></i>Run Security Audit</div>
+      <div style="font-size:.82rem;color:#95a5a6;margin-bottom:16px;">Your master password is required to decrypt and analyse your credentials.</div>
+      <form method="post">
+        {% csrf_token %}
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <div class="input-group">
+              <input id="auditPw" class="form-control" type="password" name="master" placeholder="Enter master password to run audit..." required>
+              <button type="button" class="btn pw-toggle-l" onclick="togglePw('auditPw',this)"><i class="fas fa-eye"></i></button>
+            </div>
+          </div>
+          <button type="submit" class="btn-audit"><i class="fas fa-play me-1"></i>Run Audit</button>
+        </div>
+      </form>
+    </div>
+
+    {% if audit_done %}
+    <!-- Score -->
+    {% with score_pct=strong_count|floatformat:0 %}
+    {% if total > 0 %}
+    <div class="score-ring-wrap">
+      {% if weak|length == 0 and duplicates|length == 0 %}
+        <div class="score-ring sr-excellent">A+</div>
+        <div><div class="score-label" style="color:#27ae60;">Excellent Security</div><div class="score-sub">All passwords are strong and unique. Great job!</div></div>
+      {% elif weak|length <= 1 and duplicates|length <= 1 %}
+        <div class="score-ring sr-good">B</div>
+        <div><div class="score-label" style="color:#3498db;">Good Security</div><div class="score-sub">A few minor issues found. Fix them to improve your score.</div></div>
+      {% elif weak|length <= 3 %}
+        <div class="score-ring sr-fair">C</div>
+        <div><div class="score-label" style="color:#f39c12;">Fair Security</div><div class="score-sub">Several weak passwords detected. Consider updating them.</div></div>
+      {% else %}
+        <div class="score-ring sr-poor">D</div>
+        <div><div class="score-label" style="color:#e74c3c;">Poor Security</div><div class="score-sub">Multiple weak or duplicate passwords found. Act now.</div></div>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Summary stats -->
+    <div class="summary-grid">
+      <div class="sum-card blue"><div class="sum-num">{{ total }}</div><div class="sum-label">Total Credentials</div></div>
+      <div class="sum-card green"><div class="sum-num">{{ strong_count }}</div><div class="sum-label">Strong Passwords</div></div>
+      <div class="sum-card red"><div class="sum-num">{{ weak|length }}</div><div class="sum-label">Weak Passwords</div></div>
+      <div class="sum-card orange"><div class="sum-num">{{ duplicates|length }}</div><div class="sum-label">Duplicate Passwords</div></div>
+    </div>
+
+    <!-- Weak passwords -->
+    <div class="issue-section">
+      <div class="is-header danger">
+        <div class="is-title"><i class="fas fa-exclamation-triangle" style="color:#e74c3c;"></i>Weak Passwords</div>
+        <span class="is-badge ib-red">{{ weak|length }} issue{{ weak|length|pluralize }}</span>
+      </div>
+      {% if weak %}
+      <div class="issue-list">
+        {% for e in weak %}
+        <div class="issue-row">
+          <div>
+            <div class="issue-name">{{ e.title }}</div>
+            <div class="issue-meta">{{ e.username }}{% if e.category %} · {{ e.get_category_display }}{% endif %}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="str-badge sb-danger">{{ e.strength_label }}</span>
+            <a href="{% url 'edit' e.id %}" class="fix-btn"><i class="fas fa-wrench me-1"></i>Fix Now</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="no-issues"><i class="fas fa-check-circle" style="color:#27ae60;"></i>No weak passwords found. Well done!</div>
+      {% endif %}
+    </div>
+
+    <!-- Duplicate passwords -->
+    <div class="issue-section">
+      <div class="is-header warning">
+        <div class="is-title"><i class="fas fa-copy" style="color:#f39c12;"></i>Duplicate Passwords</div>
+        <span class="is-badge ib-orange">{{ duplicates|length }} issue{{ duplicates|length|pluralize }}</span>
+      </div>
+      {% if duplicates %}
+      <div class="issue-list">
+        {% for e in duplicates %}
+        <div class="issue-row">
+          <div>
+            <div class="issue-name">{{ e.title }}</div>
+            <div class="issue-meta">{{ e.username }} — same password used on multiple sites</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="str-badge sb-warning">Duplicate</span>
+            <a href="{% url 'edit' e.id %}" class="fix-btn"><i class="fas fa-wrench me-1"></i>Fix Now</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="no-issues"><i class="fas fa-check-circle" style="color:#27ae60;"></i>No duplicate passwords found. Excellent!</div>
+      {% endif %}
+    </div>
+
+    <!-- All credentials with strength -->
+    <div class="issue-section">
+      <div class="is-header success">
+        <div class="is-title"><i class="fas fa-list" style="color:#667eea;"></i>All Credentials</div>
+        <span class="is-badge ib-green">{{ entries|length }} total</span>
+      </div>
+      <div class="issue-list">
+        {% for e in entries %}
+        {% if e.strength_label %}
+        <div class="issue-row">
+          <div>
+            <div class="issue-name">{{ e.title }}</div>
+            <div class="issue-meta">{{ e.username }}{% if e.category %} · {{ e.get_category_display }}{% endif %}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="str-badge {% if e.strength_color == 'success' %}sb-success{% elif e.strength_color == 'warning' %}sb-warning{% else %}sb-danger{% endif %}">{{ e.strength_label }}</span>
+            {% if e.strength_score <= 2 %}
+            <a href="{% url 'edit' e.id %}" class="fix-btn"><i class="fas fa-wrench me-1"></i>Fix</a>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+  (function(){const T=5*60;let r=T;const e=document.getElementById('sideTimer');function f(s){return Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60);}setInterval(()=>{if(document.getElementById('sessionOverlay').classList.contains('active'))return;r=Math.max(0,r-1);e.textContent=f(r);if(r<=60)e.style.color='#ff9999';},1000);['mousemove','keydown','click'].forEach(ev=>document.addEventListener(ev,()=>{r=T;e.style.color='rgba(255,255,255,.8)';},{passive:true}));})();
+</script>
+{% endblock %}
