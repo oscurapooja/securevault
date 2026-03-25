@@ -93,11 +93,10 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 CSRF_TRUSTED_ORIGINS = [
     'https://securevault-production-6bba.up.railway.app',
-    'http://securevault-production-6bba.up.railway.app',
 ]
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
+DEBUG = True
 
 # ── LOGIN LOCKOUT ──
 MAX_LOGIN_ATTEMPTS = 5
