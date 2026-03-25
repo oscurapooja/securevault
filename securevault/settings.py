@@ -95,6 +95,10 @@ CSRF_TRUSTED_ORIGINS = [
     'https://securevault-production-6bba.up.railway.app',
     'http://securevault-production-6bba.up.railway.app',
 ]
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'Lax'
+
 # ── LOGIN LOCKOUT ──
 MAX_LOGIN_ATTEMPTS = 5
 LOCKOUT_DURATION_MINUTES = 15
