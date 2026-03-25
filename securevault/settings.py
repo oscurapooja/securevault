@@ -91,7 +91,10 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'sbatman661@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'lkdv fcpb uwek hklf')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost').split(',')
+CSRF_TRUSTED_ORIGINS = [
+    'https://securevault-production-6bba.up.railway.app',
+    'http://securevault-production-6bba.up.railway.app',
+]
 # ── LOGIN LOCKOUT ──
 MAX_LOGIN_ATTEMPTS = 5
 LOCKOUT_DURATION_MINUTES = 15
